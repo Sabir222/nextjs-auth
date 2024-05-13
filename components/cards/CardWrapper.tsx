@@ -14,7 +14,6 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { IoIosClose } from "react-icons/io";
 
 type CardWrapperProps = {
   children: React.ReactNode;
@@ -34,7 +33,9 @@ const CardWrapper = ({
   modal,
 }: CardWrapperProps) => {
   const router = useRouter();
-
+  const handleState = () => {
+    console.log("Modal is open");
+  };
   const handleQuestionClick = () => {
     if (modal === false) {
       if (redirect === "SignIn") {
@@ -44,18 +45,11 @@ const CardWrapper = ({
       } else {
       }
     } else {
-      console.log("Modal is open");
+      handleState();
     }
   };
   return (
     <Card className="relative">
-      <Button
-        className={`rounded-full absolute top-2 right-2 ${!modal && "hidden"}`}
-        variant="outline"
-        size="icon"
-      >
-        <IoIosClose className="text-2xl" />
-      </Button>
       <div className="text-base flex p-6 justify-center items-center gap-4">
         <Image src={Logo} alt="logo" className="w-6" />
         <h1 className="drop-shadow-md"> Next Auth v5</h1>
