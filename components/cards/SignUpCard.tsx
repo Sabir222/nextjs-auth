@@ -1,6 +1,6 @@
 "use client";
 import CardWrapper from "./CardWrapper";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -32,9 +32,17 @@ const formSchema = z
     message: "Passwords don't match",
     path: ["confirm"],
   });
-
+type Message = {
+  error: string | undefined;
+  success: string | undefined;
+};
 const SignUpCard = () => {
   const [isPending, startTransition] = useTransition();
+  const [message, setMessage] = useState<Message>({
+    error: undefined,
+    success: undefined,
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,7 +52,9 @@ const SignUpCard = () => {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(() => {
-      signUp(values);
+      signUp(values).then((res) => {
+        setMessage({ error: res.error, success: res.sucess });
+      });
     });
   }
 
@@ -118,8 +128,10 @@ const SignUpCard = () => {
               </FormItem>
             )}
           />
-
-          <MessageAuth message="no no no " type="success" />
+          <MessageAuth
+            message={message.error || message.success}
+            type={message.error ? "error" : "success"}
+          />
           <Button
             type="submit"
             size="lg"
