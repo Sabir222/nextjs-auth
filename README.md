@@ -16,15 +16,18 @@ npm install react-hook-form zod
 
 > 💡 **Note:** I used shadcn Components in this example;feel free to use Components you prefer.
 
-- Sign In Card. (Not the final code)
+- Sign In Card.
 
 ```typescript
+
 "use client";
 import CardWrapper from "./CardWrapper";
 import { z } from "zod";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { SignInSchema } from "@/schemas";
 import {
   Form,
   FormControl,
@@ -34,19 +37,33 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signIn } from "@/actions/signIn";
+import MessageAuth from "./Error-auth";
 
-const formSchema = z.object({
-  password: z.string(),
-  email: z.string().email({ message: "Use a valid email" }),
-});
-
+type Message = {
+  error: string | undefined;
+  success: string | undefined;
+};
 const SignInCard = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [isPending, startTransition] = useTransition();
+  const [message, setMessage] = useState<Message>({
+    error: undefined,
+    success: undefined,
+  });
+  const form = useForm<z.infer<typeof SignInSchema>>({
+    resolver: zodResolver(SignInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  function onSubmit(values: z.infer<typeof SignInSchema>) {
+    startTransition(() => {
+      signIn(values).then((res) => {
+        setMessage({ error: res.error, success: res.sucess });
+      });
+    });
   }
 
   return (
@@ -60,6 +77,7 @@ const SignInCard = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
           <FormField
+            disabled={isPending}
             control={form.control}
             name="email"
             render={({ field }) => (
@@ -73,6 +91,7 @@ const SignInCard = () => {
             )}
           />
           <FormField
+            disabled={isPending}
             control={form.control}
             name="password"
             render={({ field }) => (
@@ -85,7 +104,16 @@ const SignInCard = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" size="lg" className="w-full ">
+          <MessageAuth
+            message={message.error || message.success}
+            type={message.error ? "error" : "success"}
+          />
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={isPending}
+          >
             Sign-In
           </Button>
         </form>
@@ -96,11 +124,13 @@ const SignInCard = () => {
 export default SignInCard;
 ```
 
-- Sign Up Card.(Not the final code)
+- Sign Up Card.
 
 ```typescript
+
 "use client";
 import CardWrapper from "./CardWrapper";
+import { useState, useTransition } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -114,6 +144,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signUp } from "@/actions/signUp";
+import MessageAuth from "./Error-auth";
 
 const formSchema = z
   .object({
@@ -130,8 +162,17 @@ const formSchema = z
     message: "Passwords don't match",
     path: ["confirm"],
   });
-
+type Message = {
+  error: string | undefined;
+  success: string | undefined;
+};
 const SignUpCard = () => {
+  const [isPending, startTransition] = useTransition();
+  const [message, setMessage] = useState<Message>({
+    error: undefined,
+    success: undefined,
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -140,7 +181,11 @@ const SignUpCard = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    startTransition(() => {
+      signUp(values).then((res) => {
+        setMessage({ error: res.error, success: res.sucess });
+      });
+    });
   }
 
   return (
@@ -154,6 +199,7 @@ const SignUpCard = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
           <FormField
+            disabled={isPending}
             control={form.control}
             name="username"
             render={({ field }) => (
@@ -167,6 +213,7 @@ const SignUpCard = () => {
             )}
           />
           <FormField
+            disabled={isPending}
             control={form.control}
             name="email"
             render={({ field }) => (
@@ -180,6 +227,7 @@ const SignUpCard = () => {
             )}
           />
           <FormField
+            disabled={isPending}
             control={form.control}
             name="password"
             render={({ field }) => (
@@ -193,6 +241,7 @@ const SignUpCard = () => {
             )}
           />
           <FormField
+            disabled={isPending}
             control={form.control}
             name="confirm"
             render={({ field }) => (
@@ -209,7 +258,16 @@ const SignUpCard = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" size="lg" className="w-full ">
+          <MessageAuth
+            message={message.error || message.success}
+            type={message.error ? "error" : "success"}
+          />
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full "
+            disabled={isPending}
+          >
             Sign-Up
           </Button>
         </form>
@@ -221,16 +279,79 @@ const SignUpCard = () => {
 export default SignUpCard;
 ```
 
+Add zod schemas in schemas/index.ts.
+
+```ts
+import * as z from "zod";
+
+export const SignInSchema = z.object({
+  password: z.string().min(6),
+  email: z.string().email({ message: "Use a valid email" }),
+});
+
+export const SignUpSchema = z
+  .object({
+    username: z.string().min(2, {
+      message: "Username must be at least 2 characters.",
+    }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be atleast 6 characters" }),
+    confirm: z.string(),
+    email: z.string().email({ message: "Use a valid email" }),
+  })
+  .refine((data) => data.password === data.confirm, {
+    message: "Passwords don't match",
+    path: ["confirm"],
+  });
+```
+
+We use server actions to to validate form input and handle Auth.
+
+- actions/signUp.ts
+
+```ts
+"use server";
+
+import { SignUpSchema } from "@/schemas";
+import * as z from "zod";
+
+export const signUp = async (values: z.infer<typeof SignUpSchema>) => {
+  const validatedFields = SignUpSchema.safeParse(values);
+  if (!validatedFields.success) {
+    return { error: "Invalid Fields" };
+  }
+  return { sucess: "Valid Fields" };
+};
+```
+
+- actions/signIn.ts
+
+```ts
+"use server";
+
+import { SignInSchema } from "@/schemas";
+import * as z from "zod";
+
+export const signIn = async (values: z.infer<typeof SignInSchema>) => {
+  const validatedFields = SignInSchema.safeParse(values);
+  if (!validatedFields.success) {
+    return { error: "Invalid Fields" };
+  }
+  return { sucess: "Valid Fields" };
+};
+```
+
 ### Step 2: Setup Prisma
 
 Install the necessary packages:
 
 ```bash
-npm i -D prisma
+npm i -D prisma @types/bcrypt
 ```
 
 ```bash
-npm i @prisma/client
+npm i @prisma/client bcrypt
 ```
 
 Add .env file.
@@ -324,4 +445,45 @@ Then push to the database.
 
 ```bash
 npx prisma db push
+```
+
+### Step 3: Adding NextAuth
+
+Install necessary packages.
+
+> 💡 **Note:** NextAuth 5 is in Beta now in the future you will install NextAuth5+ only using npm i next-auth.
+
+```bash
+npm install next-auth@beta
+```
+
+```bash
+npm i @next-auth/prisma-adapter
+```
+
+Start by creating a new auth.ts file at the root of your app with the following content.
+
+```ts
+//.auth.ts
+import NextAuth from "next-auth";
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [],
+});
+```
+
+Add an Route Handler under /app/api/auth/[...nextauth]/route.ts.
+
+```ts
+//./app/api/auth/[...nextauth]/route.ts
+
+import { handlers } from "@/auth"; // Referring to the auth.ts we just created
+export const { GET, POST } = handlers;
+```
+
+Add optional Middleware to keep the session alive, this will update the session expiry every time its called.
+
+```ts
+//./middleware.ts
+export { auth as middleware } from "@/auth";
 ```

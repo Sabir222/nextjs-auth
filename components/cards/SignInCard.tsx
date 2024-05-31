@@ -39,7 +39,6 @@ const SignInCard = () => {
   function onSubmit(values: z.infer<typeof SignInSchema>) {
     startTransition(() => {
       signIn(values).then((res) => {
-        console.log({ error: res.error, success: res.sucess });
         setMessage({ error: res.error, success: res.sucess });
       });
     });
