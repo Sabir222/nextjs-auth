@@ -458,7 +458,7 @@ npm install next-auth@beta
 ```
 
 ```bash
-npm i @next-auth/prisma-adapter
+npm i @auth/prisma-adapter
 ```
 
 Start by creating a new auth.ts file at the root of your app with the following content.
