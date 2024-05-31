@@ -263,13 +263,14 @@ npx prisma init
 This command will generate a primsa/schema.prisma
 
 ```prisma
-generator client {
-  provider = "prisma-client-js"
-}
 
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 enum UserRole {
@@ -278,17 +279,16 @@ enum UserRole {
 }
 
 model User {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  name           String?
-  email          String?   @unique
-  emailVerified  DateTime?
-  image          String?
-  hashedPassword String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  favoriteIds    String[]  @db.ObjectId
-  role           UserRole  @default(USER)
-  accounts       Account[]
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  password      String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          UserRole  @default(USER)
 }
 
 model Account {
@@ -304,6 +304,9 @@ model Account {
   scope             String?
   id_token          String? @db.String
   session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
