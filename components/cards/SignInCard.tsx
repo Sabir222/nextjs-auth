@@ -1,9 +1,11 @@
 "use client";
 import CardWrapper from "./CardWrapper";
 import { z } from "zod";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { SignInSchema } from "@/schemas";
 import {
   Form,
   FormControl,
@@ -13,19 +15,34 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signIn } from "@/actions/signIn";
+import MessageAuth from "./Error-auth";
 
-const formSchema = z.object({
-  password: z.string(),
-  email: z.string().email({ message: "Use a valid email" }),
-});
-
+type Message = {
+  error: string | undefined;
+  success: string | undefined;
+};
 const SignInCard = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [isPending, startTransition] = useTransition();
+  const [message, setMessage] = useState<Message>({
+    error: undefined,
+    success: undefined,
+  });
+  const form = useForm<z.infer<typeof SignInSchema>>({
+    resolver: zodResolver(SignInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  function onSubmit(values: z.infer<typeof SignInSchema>) {
+    startTransition(() => {
+      signIn(values).then((res) => {
+        console.log({ error: res.error, success: res.sucess });
+        setMessage({ error: res.error, success: res.sucess });
+      });
+    });
   }
 
   return (
@@ -39,6 +56,7 @@ const SignInCard = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
           <FormField
+            disabled={isPending}
             control={form.control}
             name="email"
             render={({ field }) => (
@@ -52,6 +70,7 @@ const SignInCard = () => {
             )}
           />
           <FormField
+            disabled={isPending}
             control={form.control}
             name="password"
             render={({ field }) => (
@@ -64,7 +83,16 @@ const SignInCard = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" size="lg" className="w-full ">
+          <MessageAuth
+            message={message.error || message.success}
+            type={message.error ? "error" : "success"}
+          />
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={isPending}
+          >
             Sign-In
           </Button>
         </form>

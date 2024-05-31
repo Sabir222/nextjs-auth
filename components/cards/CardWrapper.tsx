@@ -49,7 +49,7 @@ const CardWrapper = ({
     }
   };
   return (
-    <Card className="relative">
+    <Card className="relative max-w-[450px] w-full mx-4">
       <div className="text-base flex p-6 justify-center items-center gap-4">
         <Image src={Logo} alt="logo" className="w-6" />
         <h1 className="drop-shadow-md"> Next Auth v5</h1>

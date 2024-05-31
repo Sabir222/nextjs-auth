@@ -1,5 +1,6 @@
 "use client";
 import CardWrapper from "./CardWrapper";
+import { useTransition } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -13,6 +14,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signUp } from "@/actions/signUp";
+import MessageAuth from "./Error-auth";
 
 const formSchema = z
   .object({
@@ -31,6 +34,7 @@ const formSchema = z
   });
 
 const SignUpCard = () => {
+  const [isPending, startTransition] = useTransition();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,7 +43,9 @@ const SignUpCard = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    startTransition(() => {
+      signUp(values);
+    });
   }
 
   return (
@@ -53,6 +59,7 @@ const SignUpCard = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
           <FormField
+            disabled={isPending}
             control={form.control}
             name="username"
             render={({ field }) => (
@@ -66,6 +73,7 @@ const SignUpCard = () => {
             )}
           />
           <FormField
+            disabled={isPending}
             control={form.control}
             name="email"
             render={({ field }) => (
@@ -79,6 +87,7 @@ const SignUpCard = () => {
             )}
           />
           <FormField
+            disabled={isPending}
             control={form.control}
             name="password"
             render={({ field }) => (
@@ -92,6 +101,7 @@ const SignUpCard = () => {
             )}
           />
           <FormField
+            disabled={isPending}
             control={form.control}
             name="confirm"
             render={({ field }) => (
@@ -108,7 +118,14 @@ const SignUpCard = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" size="lg" className="w-full ">
+
+          <MessageAuth message="no no no " type="success" />
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full "
+            disabled={isPending}
+          >
             Sign-Up
           </Button>
         </form>
