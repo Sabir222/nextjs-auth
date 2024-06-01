@@ -6,14 +6,13 @@ import bcrypt from "bcryptjs";
 import db from "@/lib/db";
 import { getUserByEmail } from "@/lib/user";
 
-//TODO: update this file in readme and delete todo when finished
 export const signUp = async (values: z.infer<typeof SignUpSchema>) => {
   const validatedFields = SignUpSchema.safeParse(values);
   if (!validatedFields.success) {
     return { error: "Invalid Fields" };
   }
 
-  const { email, password, username } = validatedFields.data;
+  const { email, password, name } = validatedFields.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const findUser = await getUserByEmail(email);
@@ -22,7 +21,7 @@ export const signUp = async (values: z.infer<typeof SignUpSchema>) => {
   }
   await db.user.create({
     data: {
-      username,
+      name,
       email,
       password: hashedPassword,
     },

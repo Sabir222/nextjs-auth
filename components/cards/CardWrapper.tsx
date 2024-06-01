@@ -1,5 +1,5 @@
 "use client";
-
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Logo from "@/public/authentication.png";
 import {
@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
 type CardWrapperProps = {
   children: React.ReactNode;
@@ -30,22 +31,17 @@ const CardWrapper = ({
   description,
   question,
   redirect,
-  modal,
 }: CardWrapperProps) => {
-  const router = useRouter();
-  const handleState = () => {
-    console.log("Modal is open");
+  const onClick = (provider: "google" | "github") => {
+    signIn(provider, { callbackUrl: DEFAULT_LOGIN_REDIRECT });
   };
+  const router = useRouter();
   const handleQuestionClick = () => {
-    if (modal === false) {
-      if (redirect === "SignIn") {
-        router.push("/auth/signin");
-      } else if (redirect === "SignUp") {
-        router.push("/auth/signup");
-      } else {
-      }
+    if (redirect === "SignIn") {
+      router.push("/auth/signin");
+    } else if (redirect === "SignUp") {
+      router.push("/auth/signup");
     } else {
-      handleState();
     }
   };
   return (
@@ -61,11 +57,21 @@ const CardWrapper = ({
       <CardContent>{children}</CardContent>
       <CardFooter className="flex flex-col">
         <div className="flex gap-x-2 w-full">
-          <Button variant="outline" size="lg" className="w-full">
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={() => onClick("google")}
+          >
             <FcGoogle className="mr-2" />
             Google
           </Button>
-          <Button variant="outline" className="w-full" size="lg">
+          <Button
+            variant="outline"
+            className="w-full"
+            size="lg"
+            onClick={() => onClick("github")}
+          >
             <FaGithub className="mr-2" />
             Github
           </Button>
