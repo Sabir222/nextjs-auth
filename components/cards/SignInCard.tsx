@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signIn } from "@/actions/signIn";
+import { signin } from "@/actions/signIn";
 import MessageAuth from "./Error-auth";
 
 type Message = {
@@ -38,8 +38,9 @@ const SignInCard = () => {
 
   function onSubmit(values: z.infer<typeof SignInSchema>) {
     startTransition(() => {
-      signIn(values).then((res) => {
-        setMessage({ error: res.error, success: res.sucess });
+      signin(values).then((res) => {
+        const result = res || { error: "Unexpected error", success: undefined };
+        setMessage({ error: result.error, success: result.success });
       });
     });
   }
