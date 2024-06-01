@@ -347,11 +347,11 @@ export const signIn = async (values: z.infer<typeof SignInSchema>) => {
 Install the necessary packages:
 
 ```bash
-npm i -D prisma @types/bcrypt
+npm i -D prisma @types/bcryptjs
 ```
 
 ```bash
-npm i @prisma/client bcrypt
+npm i @prisma/client bcryptjs
 ```
 
 Add .env file.
@@ -466,9 +466,14 @@ Start by creating a new auth.ts file at the root of your app with the following 
 ```ts
 //.auth.ts
 import NextAuth from "next-auth";
+import authConfig from "./auth.config";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import db from "./lib/db";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [],
+export const { auth, handlers, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(db),
+  session: { strategy: "jwt" },
+  ...authConfig,
 });
 ```
 
@@ -485,5 +490,44 @@ Add optional Middleware to keep the session alive, this will update the session 
 
 ```ts
 //./middleware.ts
-export { auth as middleware } from "@/auth";
+import authConfig from "./auth.config";
+import NextAuth from "next-auth";
+import {
+  authRoutes,
+  apiAuthPrefix,
+  DEFAULT_LOGIN_REDIRECT,
+  publicRoutes,
+} from "@/routes";
+const { auth } = NextAuth(authConfig);
+
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+  const isApiRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+
+  if (isApiRoute) {
+    return null;
+  }
+  if (isAuthRoute) {
+    if (isLoggedIn) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+    }
+    return null;
+  }
+  if (!isLoggedIn && !isPublicRoute) {
+    return Response.redirect(new URL("/auth/signin", nextUrl));
+  }
+  return null;
+});
+export const config = {
+  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+};
+```
+
+Add auth Config.
+
+```ts
+// ./auth.config.ts
 ```
