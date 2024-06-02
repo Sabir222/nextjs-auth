@@ -16,21 +16,19 @@ export default auth((req) => {
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
   if (isApiRoute) {
-    return null;
+    return undefined;
   }
   if (isAuthRoute) {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
-    return null;
+    return undefined;
   }
   if (!isLoggedIn && !isPublicRoute) {
     return Response.redirect(new URL("/auth/signin", nextUrl));
   }
-  return null;
+  return undefined;
 });
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };
-
-//TODO: update this file in readme and delete todo when finished
