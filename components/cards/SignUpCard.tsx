@@ -1,6 +1,6 @@
 "use client";
 import CardWrapper from "./CardWrapper";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -17,17 +17,26 @@ import { Input } from "@/components/ui/input";
 import { signUp } from "@/actions/signUp";
 import MessageAuth from "./Error-auth";
 import { SignUpSchema } from "@/schemas";
+import { useSearchParams } from "next/navigation";
 type Message = {
   error: string | undefined;
   success: string | undefined;
 };
 const SignUpCard = () => {
   const [isPending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
   const [message, setMessage] = useState<Message>({
     error: undefined,
     success: undefined,
   });
-
+  useEffect(() => {
+    if (searchParams.get("error") === "OAuthAccountNotLinked") {
+      setMessage({
+        error: "This account is already linked to another user",
+        success: undefined,
+      });
+    }
+  }, [searchParams]);
   const form = useForm<z.infer<typeof SignUpSchema>>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
