@@ -1,10 +1,11 @@
 import Verification from "@/components/Verification";
+import { Suspense } from "react";
 
 const Page = () => {
   return (
-    <div>
+    <Suspense>
       <Verification />
-    </div>
+    </Suspense>
   );
 };
 

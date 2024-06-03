@@ -1,7 +1,7 @@
 "use client";
 import { newVerificationToken } from "@/actions/verification";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useCallback, useState, Suspense } from "react";
+import { useEffect, useCallback, useState } from "react";
 import MessageAuth from "./cards/Error-auth";
 
 type Message = {
@@ -36,15 +36,13 @@ const Verification = () => {
     }
   }, [token, onSubmit]);
   return (
-    <Suspense>
-      <div className="w-full  min-h-[100vh] h-full flex justify-center items-center">
-        Verifiying the token: {token}
-        <MessageAuth
-          message={message.error || message.success}
-          type={message.error ? "error" : "success"}
-        />
-      </div>
-    </Suspense>
+    <div className="w-full  min-h-[100vh] h-full flex justify-center items-center">
+      Verifiying the token: {token}
+      <MessageAuth
+        message={message.error || message.success}
+        type={message.error ? "error" : "success"}
+      />
+    </div>
   );
 };
 
