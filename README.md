@@ -1,4 +1,4 @@
-# NextAuth 5 Full Functionalities
+# NextAuth 5 Full Functionalities.
 
 This repository contains the implementation of all functionalities of NextAuth 5 with Next.js.
 
